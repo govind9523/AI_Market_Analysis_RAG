@@ -351,8 +351,9 @@ This system is designed for local, single-user operation on resource-constrained
 
 ### Screenshot 1
 <img width="1197" height="809" alt="Screenshot 2025-08-21 at 16 37 45" src="https://github.com/user-attachments/assets/224d2f8d-29c8-450e-8a6f-6b3aa980468a" />
+### Screenshot 2
 
-
+<img width="1196" height="805" alt="Screenshot 2025-08-21 at 16 37 56" src="https://github.com/user-attachments/assets/8d134689-2ead-4cfe-ace4-1b5462ef61c8" />
 
 
 ## CONCLUSION

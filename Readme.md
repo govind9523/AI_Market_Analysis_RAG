@@ -346,6 +346,15 @@ This system is designed for local, single-user operation on resource-constrained
 - Accuracy: Excellent 🎯🎯
 - Cost: $100-1000/month ❌
 
+
+## ScreenShot
+
+### Screenshot 1
+<img width="1197" height="809" alt="Screenshot 2025-08-21 at 16 37 45" src="https://github.com/user-attachments/assets/224d2f8d-29c8-450e-8a6f-6b3aa980468a" />
+
+
+
+
 ## CONCLUSION
 
 This implementation successfully demonstrates that sophisticated RAG systems can operate effectively within severe resource constraints while maintaining professional-grade functionality. The key insight is that careful component selection and optimization can achieve 60-70% memory reduction with only 10-20% accuracy trade-offs.

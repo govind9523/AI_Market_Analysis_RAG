@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Market Analyst - RAG System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: 600px;
+        }
+
+        .query-panel {
+            flex: 1;
+            padding: 30px;
+            border-right: 1px solid #eee;
+        }
+
+        .results-panel {
+            flex: 1;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-container {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tool-badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .confidence-badge {
+            background: #28a745;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .result-content {
+            line-height: 1.6;
+            color: #333;
+            white-space: pre-wrap;
+        }
+        
+        pre {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 1rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .metadata {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .metadata-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading::after {
+            content: "...";
+            animation: dots 1s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }
+            40% { color: #666; text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }
+            60% { text-shadow: .25em 0 0 #666, .5em 0 0 rgba(0,0,0,0); }
+            80%, 100% { text-shadow: .25em 0 0 #666, .5em 0 0 #666; }
+        }
+
+        .examples {
+            margin-top: 30px;
+        }
+
+        .example-queries {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .example-btn {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .example-btn:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .status-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 20px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+        }
+
+        .status-online {
+            background: #28a745;
+        }
+
+        .status-offline {
+            background: #dc3545;
+        }
+
+        .error {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .query-panel {
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status-indicator status-offline" id="statusIndicator">
+        🔴 Checking Connection...
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Market Analyst</h1>
+            <p>Intelligent RAG System - Optimized for 8GB Systems</p>
+        </div>
+
+        <div class="main-content">
+            <div class="query-panel">
+                <form id="queryForm">
+                    <div class="form-group">
+                        <label for="queryInput">📝 Your Query</label>
+                        <textarea 
+                            id="queryInput" 
+                            placeholder="Ask about market data, request a summary, or extract specific information...&#10;&#10;Examples:&#10;• What is FutureFlow's market share?&#10;• Summarize the competitive landscape&#10;• Extract key financial data"
+                            required
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="toolSelect">🛠️ Tool Selection</label>
+                        <select id="toolSelect">
+                            <option value="">🎯 Auto-routing (AI decides)</option>
+                            <option value="qa">❓ Q&A Tool</option>
+                            <option value="summarize">📋 Summarizer</option>
+                            <option value="extract">📊 Data Extractor</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn" id="submitBtn">
+                        🚀 Analyze Query
+                    </button>
+                </form>
+
+                <div class="examples">
+                    <h3>💡 Example Queries</h3>
+                    <div class="example-queries">
+                        <button type="button" class="example-btn" onclick="setExample('What is the market share of FutureFlow?', 'qa')">
+                            <strong>Q&A:</strong> What is the market share of FutureFlow?
+                        </button>
+                        <button type="button" class="example-btn" onclick="setExample('Summarize the key findings from the report', 'summarize')">
+                            <strong>Summary:</strong> Summarize the key findings from the report
+                        </button>
+                        <button type="button" class="example-btn" onclick="setExample('Extract key financial data', 'extract')">
+                            <strong>Extract:</strong> Extract key financial data
+                        </button>
+                        <button type="button" class="example-btn" onclick="setExample('What are the main threats to the company?', '')">
+                            <strong>Auto:</strong> What are the main threats to the company?
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-panel">
+                <div id="resultsContainer">
+                    <div class="results-container">
+                        <h3>📊 Results</h3>
+                        <p style="color: #666; font-style: italic; margin-top: 15px;">
+                            Enter a query and click "Analyze Query" to see results here.
+                        </p>
+                        <p style="color: #666; font-size: 14px; margin-top: 10px;">
+                            The AI will automatically route your query to the most appropriate tool, or you can manually select one.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isSystemOnline = false;
+
+        // Check system status on load
+        async function checkSystemStatus() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                
+                const indicator = document.getElementById('statusIndicator');
+                if (response.ok && data.status === 'healthy') {
+                    indicator.textContent = '🟢 System Online';
+                    indicator.className = 'status-indicator status-online';
+                    isSystemOnline = true;
+                } else {
+                    indicator.textContent = '🟡 System Starting...';
+                    indicator.className = 'status-indicator status-offline';
+                    isSystemOnline = false;
+                }
+            } catch (error) {
+                const indicator = document.getElementById('statusIndicator');
+                indicator.textContent = '🔴 System Offline';
+                indicator.className = 'status-indicator status-offline';
+                isSystemOnline = false;
+            }
+        }
+
+        // Set example query
+        function setExample(query, tool) {
+            document.getElementById('queryInput').value = query;
+            document.getElementById('toolSelect').value = tool;
+        }
+
+        // Handle form submission
+        document.getElementById('queryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!isSystemOnline) {
+                showError('System is not online. Please check that the FastAPI server is running.');
+                return;
+            }
+
+            const query = document.getElementById('queryInput').value.trim();
+            const tool = document.getElementById('toolSelect').value;
+            const submitBtn = document.getElementById('submitBtn');
+            const resultsContainer = document.getElementById('resultsContainer');
+
+            if (!query) {
+                showError('Please enter a query.');
+                return;
+            }
+
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = '🔄 Processing...';
+            
+            resultsContainer.innerHTML = `
+                <div class="results-container">
+                    <div class="loading">
+                        <h3>🤖 AI is thinking</h3>
+                        <p>Processing your query</p>
+                    </div>
+                </div>
+            `;
+
+            try {
+                const requestBody = { query };
+                if (tool) requestBody.tool = tool;
+
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayResults(data);
+                } else {
+                    showError(`Error: ${data.detail || 'Unknown error occurred'}`);
+                }
+            } catch (error) {
+                showError(`Network error: ${error.message}`);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 Analyze Query';
+            }
+        });
+
+        // Display results
+        function displayResults(data) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            // Format confidence as percentage
+            const confidencePercent = Math.round(data.confidence * 100);
+            
+            // Format metadata
+            let metadataHtml = '';
+            if (data.metadata) {
+                metadataHtml = Object.entries(data.metadata)
+                    .map(([key, value]) => `
+                        <div class="metadata-item">
+                            <strong>${formatMetadataKey(key)}:</strong>
+                            <span>${formatMetadataValue(value, key)}</span>
+                        </div>
+                    `)
+                    .join('');
+            }
+
+            resultsContainer.innerHTML = `
+                <div class="results-container">
+                    <div class="result-header">
+                        <div>
+                            <span class="tool-badge">${data.tool_used.toUpperCase()}</span>
+                        </div>
+                        <div>
+                            <span class="confidence-badge">${confidencePercent}% confident</span>
+                        </div>
+                    </div>
+                    
+                    <div class="result-content">${formatResponse(data.response)}</div>
+                    
+                    ${metadataHtml ? `
+                        <div class="metadata">
+                            <strong>📊 Analysis Details:</strong>
+                            ${metadataHtml}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // Format response for better display
+        function formatResponse(response) {
+            // If it looks like JSON, format it nicely
+            try {
+                const parsed = JSON.parse(response);
+                return `<pre>${JSON.stringify(parsed, null, 2)}</pre>`;
+            } catch (e) {
+                // Not JSON, return as is with line breaks preserved
+                return response.replace(/\n/g, '<br>');
+            }
+        }
+
+        // Format metadata keys
+        function formatMetadataKey(key) {
+            return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        // Format metadata values
+        function formatMetadataValue(value, key) {
+            if (typeof value === 'number') {
+                if (key === 'execution_time') {
+                    return `${value}s`;
+                }
+                return value.toLocaleString();
+            }
+            if (typeof value === 'boolean') {
+                return value ? '✅' : '❌';
+            }
+            // Return everything else as a string, handling null/undefined
+            return String(value ?? '');
+        }
+
+        // Show error message
+        function showError(message) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.innerHTML = `
+                <div class="results-container">
+                    <div class="error">
+                        <strong>⚠️ Error:</strong> ${message}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initialize
+        checkSystemStatus();
+        
+        // Check status every 30 seconds
+        setInterval(checkSystemStatus, 30000);
+
+        // Auto-focus on query input
+        document.getElementById('queryInput').focus();
+    </script>
+</body>
+</html>

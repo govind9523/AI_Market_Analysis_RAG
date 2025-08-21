@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # Main RAG application
+  rag-app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_HOST=ollama:11434
+      - LOG_LEVEL=INFO
+    depends_on:
+      - ollama
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G  # Memory limit for 8GB system compatibility
+        reservations:
+          memory: 2G
+
+  # Ollama service for LLM inference
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_MODELS=/root/.ollama/models
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 3G  # Reserve memory for model
+        reservations:
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  ollama_data:
+    driver: local

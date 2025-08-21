@@ -1,0 +1,26 @@
+# Minimal dependencies for 8GB system optimization
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.0
+
+# Lightweight embedding model
+sentence-transformers==2.2.2
+transformers==4.35.2
+
+# Vector store - CPU optimized
+faiss-cpu==1.7.4
+numpy==1.24.3
+
+# LLM inference via Ollama (lightweight client)
+ollama==0.1.7
+httpx==0.25.2
+
+# Text processing
+nltk==3.8.1
+
+# Optional for better JSON extraction
+pydantic-extra-types==2.1.0
+
+# Development
+pytest==7.4.3
+black==23.11.0
